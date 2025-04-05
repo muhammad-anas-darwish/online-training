@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Models;
+namespace Modules\Auth\Entities;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -10,7 +11,7 @@ use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
+    /** @use HasFactory<\Database\Factories\Modules\Auth\Entities\UserFactory> */
     use HasFactory, Notifiable, HasRoles;
 
     /**

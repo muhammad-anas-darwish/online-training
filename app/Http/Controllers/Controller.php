@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
-abstract class Controller
+use App\Traits\ApiResponses;
+
+class Controller extends \Illuminate\Routing\Controller
 {
-    //
+    use ApiResponses;
 }
