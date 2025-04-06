@@ -2,6 +2,7 @@
 
 namespace App\Traits;
 
+use App\Support\ResponseBuilder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
@@ -18,8 +19,8 @@ trait ApiResponses
         array|JsonResource|Model|Collection $data,
         ?string $message = null,
         int $statusCode = 200
-    ): JsonResponse {
-        return response()->json([
+    ): ResponseBuilder {
+        return new ResponseBuilder([
             'success' => true,
             'message' => $message,
             'data' => $data

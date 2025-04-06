@@ -32,19 +32,19 @@ class RoleController extends Controller
     public function store(StoreRoleRequest $request)
     {
         $role = $this->roleService->store(RoleDTO::fromRequest($request->validated()));
-        return $this->successResponse(RoleResource::make($role), __("Role Created Successfully"), 201);
+        return $this->successResponse(RoleResource::make($role))->created('role');
     }
 
     public function update(UpdateRoleRequest $request, $id)
     {
         $role = $this->roleService->update($id, RoleDTO::fromRequest($request->validated()));
-        return $this->successResponse(RoleResource::make($role), __("Role Updated Successfully"));
+        return $this->successResponse(RoleResource::make($role))->updated('role');
     }
 
     public function destroy($id)
     {
         $this->roleService->destroy($id);
-        return $this->successResponse([], __("Role Deleted Successfully"));
+        return $this->successResponse([])->deleted('role');
     }
 
     public function getAllPermissions()
