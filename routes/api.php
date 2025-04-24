@@ -11,9 +11,8 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 Route::apiResource('roles', RoleController::class);
-Route::get('permissions', [RoleController::class,'getAllPermissions']);
+Route::get('permissions', [RoleController::class, 'getAllPermissions']);
 
 Route::prefix('auth')->group(function () {
-Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
-        ->middleware('auth:sanctum');
+    Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->middleware('auth:sanctum');
 });
