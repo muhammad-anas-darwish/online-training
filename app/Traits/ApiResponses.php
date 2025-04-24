@@ -16,7 +16,7 @@ trait ApiResponses
      * Send a success response with data
      */
     protected function successResponse(
-        array|JsonResource|Model|Collection $data,
+        array|JsonResource|Model|Collection $data = [],
         ?string $message = null,
         int $statusCode = 200
     ): ResponseBuilder {

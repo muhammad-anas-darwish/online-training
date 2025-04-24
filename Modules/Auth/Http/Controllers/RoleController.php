@@ -44,7 +44,7 @@ class RoleController extends Controller
     public function destroy($id)
     {
         $this->roleService->destroy($id);
-        return $this->successResponse([])->deleted('role');
+        return $this->successResponse()->deleted('role');
     }
 
     public function getAllPermissions()
