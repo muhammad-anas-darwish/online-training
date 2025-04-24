@@ -13,16 +13,7 @@ Route::get('/user', function (Request $request) {
 Route::apiResource('roles', RoleController::class);
 Route::get('permissions', [RoleController::class,'getAllPermissions']);
 
-Route::middleware(['auth:sanctum'])->group(function () {
-    Route::get('test', function () {
-        info(Auth::user());
-        return 'test';
-    });
-});
-
 Route::prefix('auth')->group(function () {
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
         ->middleware('auth:sanctum');
-    
-    // Add other auth routes as needed
 });
