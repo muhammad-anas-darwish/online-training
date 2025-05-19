@@ -31,7 +31,7 @@ class RoleService
         return DB::transaction(function () use ($roleDto): Role {
             $role = Role::create([
                 'name' => $roleDto->name,
-                'guard_name' => $roleDto->guard_name
+                'guard_name' => 'sanctum'
             ]);
 
             if (!empty($roleDto->permissions)) {
@@ -50,7 +50,6 @@ class RoleService
         return DB::transaction(function () use ($id, $role, $roleDto): Role {
             $role->update([
                 'name' => $roleDto->name,
-                'guard_name' => $roleDto->guard_name
             ]);
 
             if (!empty($roleDto->permissions)) {

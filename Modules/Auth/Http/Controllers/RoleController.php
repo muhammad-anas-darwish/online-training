@@ -14,7 +14,11 @@ class RoleController extends Controller
 {
     public function __construct (protected readonly RoleService $roleService)
     {
-        // 
+        $this->applyPermissions(
+            'roles', 
+            ['index', 'show', 'store', 'update', 'destroy'],
+            ['getAllPermissions' => 'list-permissions'],
+        );
     }
 
     public function index()

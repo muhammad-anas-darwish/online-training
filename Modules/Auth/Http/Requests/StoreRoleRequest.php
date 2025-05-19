@@ -15,19 +15,9 @@ class StoreRoleRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', Rule::unique(Role::class, 'name')],
-            'guard_name' => ['required', 'string', new Enum(GuardEnum::class)],
             'permissions' => ['required', 'array'],
             'permissions.*' => ['required', 'integer', Rule::exists(Permission::class, 'id')],
         ];
-    }
-
-    public function passes($attribute, $value)
-    {
-        $invalidCount = Permission::whereIn('id', $value)
-            ->where('guard_name', '!=', $this->roleGuardName)
-            ->count();
-
-        return $invalidCount === 0;
     }
 
     public function authorize(): bool
