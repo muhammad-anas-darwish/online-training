@@ -12,6 +12,7 @@ Route::get('/user', function (Request $request) {
 Route::middleware('auth:sanctum')->group(function() { 
     Route::apiResource('roles', RoleController::class);
     Route::get('permissions', [RoleController::class, 'getAllPermissions']);
+    Route::get('permissions/user', [RoleController::class, 'getUserPermissions']);
 });
 
 Route::prefix('auth')->group(function () {

@@ -100,6 +100,13 @@ class RoleService
         });
     }
 
+    public function getUserPermissions(int $userId): Collection
+    {
+        $userModel = config('auth.providers.users.model');
+        $user = (new $userModel)->findOrFail($userId);
+        return $user->getAllPermissions();
+    }
+
     private function syncPermissionsToRole(Role $role, array $permissionIds): void
     {
         $permissions = Permission::whereIn('id', $permissionIds)->get();

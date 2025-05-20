@@ -3,6 +3,7 @@
 namespace Modules\Auth\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 use Modules\Auth\DTOs\RoleDTO;
 use Modules\Auth\Http\Requests\StoreRoleRequest;
 use Modules\Auth\Http\Requests\UpdateRoleRequest;
@@ -54,6 +55,12 @@ class RoleController extends Controller
     public function getAllPermissions()
     {
         $permissions = $this->roleService->allPermissions();
+        return $this->successResponse(PermissionResource::collection($permissions));
+    }
+
+    public function getUserPermissions()
+    {
+        $permissions = $this->roleService->getUserPermissions(Auth::id());
         return $this->successResponse(PermissionResource::collection($permissions));
     }
 }
