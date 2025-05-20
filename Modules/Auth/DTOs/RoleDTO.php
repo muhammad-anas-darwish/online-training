@@ -8,7 +8,7 @@ readonly final class RoleDTO implements DTOInterface
 {
     public function __construct(
         public ?string $name = null,
-        public ?string $guard_name = 'web',
+        public ?string $guard_name = null,
         public ?array $permissions = [],
     ) {
     }
@@ -16,9 +16,9 @@ readonly final class RoleDTO implements DTOInterface
     public static function fromRequest(array $array): self
     {
         return new self(
-            name: $array['name'],
-            guard_name: $array['guard_name'],
-            permissions: $array['permissions'],
+            name: $array['name'] ?? null,
+            guard_name: $array['guard_name'] ?? null,
+            permissions: $array['permissions'] ?? [],
         );
     }
 }
