@@ -2,6 +2,7 @@
 
 namespace Modules\Auth\Services;
 
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
@@ -11,18 +12,31 @@ use Modules\Auth\Entities\Permission;
 
 class RoleService
 {
-    private const ROLE_CACHE_KEY = 'roles';
-    private const PERMISSIONS_CACHE_KEY = 'permissions';
+    private const ROLES_CACHE_PREFIX = 'roles';
+    private const PERMISSIONS_CACHE_KEY = 'permissions.all';
+    private const CACHE_TTL = 86400; // 1 day
 
-    public function all(): \Illuminate\Pagination\LengthAwarePaginator
+    public function all(): LengthAwarePaginator
     {
-        return Role::query()->paginate(request()->per_page);
+        $page = request()->get('page', 1);
+        $perPage = request()->get('per_page', 15);
+        $cacheKey = $this->getPaginatedRolesCacheKey($page, $perPage);
+
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($perPage) {
+            return Role::query()
+                ->with('permissions')
+                ->paginate($perPage);
+        });
     }
 
     public function find(int $id): Role
     {
-        return Cache::remember(self::ROLE_CACHE_KEY . "_id_{$id}", now()->addMinutes(10), function () use ($id) {
-            return Role::query()->with('permissions')->findOrFail($id);
+        $cacheKey = $this->getRoleCacheKey($id);
+        
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($id) {
+            return Role::query()
+                ->with('permissions')
+                ->findOrFail($id);
         });
     }
 
@@ -38,16 +52,18 @@ class RoleService
                 $this->syncPermissionsToRole($role, $roleDto->permissions);
             }
 
-            Cache::forget(self::ROLE_CACHE_KEY . "_id_{$role->id}");
+            $this->clearRoleCache($role->id);
+            $this->clearPaginatedRolesCache();
 
             return $role->load('permissions');
         });
     }
 
-    public function update(int $id, RoleDto $roleDto): Role
+    public function update(int $id, RoleDTO $roleDto): Role
     {
         $role = $this->find($id);
-        return DB::transaction(function () use ($id, $role, $roleDto): Role {
+        
+        return DB::transaction(function () use ($role, $roleDto): Role {
             $role->update([
                 'name' => $roleDto->name,
             ]);
@@ -56,7 +72,8 @@ class RoleService
                 $this->syncPermissionsToRole($role, $roleDto->permissions);
             }
 
-            Cache::forget(self::ROLE_CACHE_KEY . "_id_{$id}");
+            $this->clearRoleCache($role->id);
+            $this->clearPaginatedRolesCache();
 
             return $role->load('permissions');
         });
@@ -66,11 +83,11 @@ class RoleService
     {
         $role = $this->find($id);
         
-        return DB::transaction(function () use ($id, $role): bool {
-
+        return DB::transaction(function () use ($role): bool {
             $result = $role->delete();
 
-            Cache::forget(self::ROLE_CACHE_KEY . "_id_{$id}");
+            $this->clearRoleCache($role->id);
+            $this->clearPaginatedRolesCache();
 
             return $result;
         });
@@ -78,7 +95,7 @@ class RoleService
 
     public function allPermissions(): Collection
     {
-        return Cache::remember(self::PERMISSIONS_CACHE_KEY, now()->addMinutes(10), function () {
+        return Cache::remember(self::PERMISSIONS_CACHE_KEY, self::CACHE_TTL, function () {
             return Permission::query()->get();
         });
     }
@@ -87,5 +104,27 @@ class RoleService
     {
         $permissions = Permission::whereIn('id', $permissionIds)->get();
         $role->syncPermissions($permissions);
+        
+        Cache::forget(self::PERMISSIONS_CACHE_KEY);
+    }
+
+    private function getRoleCacheKey(int $id): string
+    {
+        return self::ROLES_CACHE_PREFIX . ".{$id}";
+    }
+
+    private function getPaginatedRolesCacheKey(int $page, int $perPage): string
+    {
+        return self::ROLES_CACHE_PREFIX . ".page.{$page}.per_page.{$perPage}";
+    }
+
+    private function clearRoleCache(int $id): void
+    {
+        Cache::forget($this->getRoleCacheKey($id));
+    }
+
+    private function clearPaginatedRolesCache(): void
+    {
+        Cache::tags([self::ROLES_CACHE_PREFIX . '_pages'])->flush();
     }
 }
