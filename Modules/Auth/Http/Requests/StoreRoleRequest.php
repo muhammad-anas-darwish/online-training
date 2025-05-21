@@ -4,8 +4,6 @@ namespace Modules\Auth\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\Rules\Enum;
-use Modules\Auth\Enums\GuardEnum;
 use Modules\Auth\Entities\Permission;
 use Modules\Auth\Entities\Role;
 

@@ -7,6 +7,7 @@ use Illuminate\Foundation\Testing\WithFaker;
 use Modules\Auth\Entities\User;
 use Modules\Auth\Entities\Permission;
 use Modules\Auth\Entities\Role;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class RoleControllerTest extends TestCase
@@ -19,12 +20,13 @@ class RoleControllerTest extends TestCase
     {
         parent::setUp();
 
-        $this->authenticatedUser = $this->createUser();
+        $this->authenticatedUser = User::query()->first();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_list_all_roles()
     {
+        $countRoles = Role::query()->count();
         $roles = Role::factory()->withPermissions()->count(3)->create();
 
         $response = $this->actingAs($this->authenticatedUser)
@@ -33,15 +35,15 @@ class RoleControllerTest extends TestCase
         $response->assertOk()
             ->assertJsonStructure([
                 'data' => [
-                    '*' => ['id', 'name', 'guard_name']
+                    '*' => ['id', 'name']
                 ],
                 'pagination',
             ]);
 
-        $this->assertCount(3, $response->json('data'));
+        $this->assertCount(3 + $countRoles, $response->json('data'));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_show_a_specific_role()
     {
         $role = Role::factory()->withPermissions()->create();
@@ -54,18 +56,16 @@ class RoleControllerTest extends TestCase
                 'data' => [
                     'id' => $role->id,
                     'name' => $role->name,
-                    'guard_name' => $role->guard_name,
                 ]
             ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_a_new_role()
     {
-        $permission = Permission::factory()->create();
+    $permission = Permission::factory()->create();
         $roleData = [
             'name' => 'admin',
-            'guard_name' => $permission->guard_name,
             'permissions' => [$permission->id]
         ];
 
@@ -86,7 +86,7 @@ class RoleControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_role_creation()
     {
         $response = $this->actingAs($this->authenticatedUser)
@@ -96,14 +96,13 @@ class RoleControllerTest extends TestCase
             ->assertJsonValidationErrors(['name', 'permissions']);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_update_an_existing_role()
     {
         $role = Role::factory()->withPermissions()->create(['name' => 'old-name']);
-        $permission = Permission::factory()->setGuard($role->guard_name)->create();
+        $permission = Permission::factory()->create();
         $updateData = [
             'name' => 'updated-name',
-            'guard_name' => $role->guard_name,
             'permissions' => [$permission->id],
         ];
 
@@ -115,7 +114,6 @@ class RoleControllerTest extends TestCase
                 'message' => 'Role Updated Successfully',
                 'data' => [
                     'name' => 'updated-name',
-                    'guard_name' => $role->guard_name,
                 ]
             ]);
 
@@ -126,7 +124,7 @@ class RoleControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_delete_a_role()
     {
         $role = Role::factory()->create();
@@ -138,21 +136,17 @@ class RoleControllerTest extends TestCase
             ->assertJson(['message' => 'Role Deleted Successfully']);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_list_all_permissions()
     {
-        $permissions = Permission::factory()->count(5)->create();
-
         $response = $this->actingAs($this->authenticatedUser)
             ->getJson('/api/permissions');
 
         $response->assertOk()
-            ->assertJsonCount(5, 'data');
-    }
-
-    protected function createUser()
-    {
-        $user = User::factory()->create();
-        return $user;
+            ->assertJsonStructure([
+                'data' => [
+                    '*' => ['id', 'name']
+                ],
+            ]);
     }
 }

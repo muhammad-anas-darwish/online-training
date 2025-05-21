@@ -4,7 +4,6 @@ namespace Database\Factories\Modules\Auth\Entities;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Modules\Auth\Entities\Permission;
-use Modules\Auth\Enums\GuardEnum;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\Modules\Auth\Entities\Permission>
@@ -22,7 +21,7 @@ class PermissionFactory extends Factory
     {
         return [
             'name' => $this->faker->unique()->word,
-            'guard_name' => $this->faker->randomElement(GuardEnum::values()),
+            'guard_name' => 'sanctum',
         ];
     }
 

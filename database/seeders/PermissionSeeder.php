@@ -11,7 +11,7 @@ class PermissionSeeder extends Seeder
 {
     private $permissionGroups = [
         'roles' => [
-            'permissions' => ['list', 'show', 'create', 'edit', 'delete']
+            'permissions' => ['list', 'show', 'create', 'edit', 'delete', 'get-all-permissions']
         ],
     ];
 

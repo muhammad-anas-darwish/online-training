@@ -18,7 +18,7 @@ class RoleController extends Controller
         $this->applyPermissions(
             'roles', 
             ['index', 'show', 'store', 'update', 'destroy'],
-            ['getAllPermissions' => 'list-permissions'],
+            ['getAllPermissions' => 'get-all-permissions'],
         );
     }
 
