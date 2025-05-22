@@ -29,9 +29,8 @@ class FortifyServiceProvider extends ServiceProvider
 
             public function toResponse($request)
             {
-                $request->user()->currentAccessToken()->delete();
-
-                return $this->successResponse(message: __("messages.logout.success"), statusCode: 200);
+                $request->user()->tokens()->delete();
+                return $this->successResponse(message: __("messages.logout.success"));
             }
         });
 

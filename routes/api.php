@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Modules\Auth\Http\Controllers\RoleController;
 use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
