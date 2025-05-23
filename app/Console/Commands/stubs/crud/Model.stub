@@ -1,0 +1,18 @@
+<?php
+
+namespace {{ namespace }};
+
+use Illuminate\Database\Eloquent\Model;
+
+class {{ class }} extends Model
+{
+    protected $table = '{{ table }}';
+    
+    protected $fillable = [
+        // Add your fillable fields here
+    ];
+    
+    protected $casts = [
+        // Add your casts here
+    ];
+}
