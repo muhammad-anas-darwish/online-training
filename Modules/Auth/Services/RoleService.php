@@ -2,6 +2,7 @@
 
 namespace Modules\Auth\Services;
 
+use App\Services\BaseService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
@@ -10,7 +11,7 @@ use Modules\Auth\DTOs\RoleDTO;
 use Modules\Auth\Entities\Role;
 use Modules\Auth\Entities\Permission;
 
-class RoleService
+class RoleService extends BaseService
 {
     private const ROLES_CACHE_PREFIX = 'roles';
     private const PERMISSIONS_CACHE_KEY = 'permissions.all';
@@ -20,19 +21,22 @@ class RoleService
     {
         $page = request()->get('page', 1);
         $perPage = request()->get('per_page', 15);
+        
+        if ($this->shouldBypassCache(Role::class)) {
+            return Role::query()->filter()->paginate($perPage);
+        }
+        
         $cacheKey = $this->getPaginatedRolesCacheKey($page, $perPage);
-
+        
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($perPage) {
-            return Role::query()
-                ->with('permissions')
-                ->paginate($perPage);
+            return Role::query()->paginate($perPage);
         });
     }
 
     public function find(int $id): Role
     {
         $cacheKey = $this->getRoleCacheKey($id);
-        
+
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($id) {
             return Role::query()
                 ->with('permissions')
@@ -62,7 +66,7 @@ class RoleService
     public function update(int $id, RoleDTO $roleDto): Role
     {
         $role = $this->find($id);
-        
+
         return DB::transaction(function () use ($role, $roleDto): Role {
             $role->update([
                 'name' => $roleDto->name,
@@ -82,7 +86,7 @@ class RoleService
     public function destroy(int $id): bool
     {
         $role = $this->find($id);
-        
+
         return DB::transaction(function () use ($role): bool {
             $result = $role->delete();
 
@@ -111,7 +115,7 @@ class RoleService
     {
         $permissions = Permission::whereIn('id', $permissionIds)->get();
         $role->syncPermissions($permissions);
-        
+
         Cache::forget(self::PERMISSIONS_CACHE_KEY);
     }
 

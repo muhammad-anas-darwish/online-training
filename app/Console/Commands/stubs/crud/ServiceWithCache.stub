@@ -2,13 +2,14 @@
 
 namespace {{ namespace }};
 
+use App\Services\BaseService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use {{ modelNamespace }};
 use {{ dtoNamespace }};
 
-class {{ class }}
+class {{ class }} extends BaseService
 {
     private const CACHE_PREFIX = '{{ cachePrefix }}';
     private const CACHE_TTL = 86400; // 1 day
@@ -17,6 +18,11 @@ class {{ class }}
     {
         $page = request()->get('page', 1);
         $perPage = request()->get('per_page', 15);
+
+        if ($this->shouldBypassCache({{ $model }}::class)) {
+            return {{ $model }}::query()->filter()->paginate($perPage);
+        }
+
         $cacheKey = $this->getPaginatedCacheKey($page, $perPage);
 
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($perPage) {
