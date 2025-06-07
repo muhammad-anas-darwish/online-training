@@ -71,20 +71,20 @@ trait ApiResponses
      * Send a "not found" response
      */
     protected function notFoundResponse(
-        string $message = 'Resource not found',
+        string $message = 'exceptions.not_found',
         array|JsonResource|Model|Collection $data = null
     ): JsonResponse {
-        return $this->failedResponse($message, 404, null, $data);
+        return $this->failedResponse(__($message), 404, null, $data);
     }
 
     /**
      * Send an "unauthorized" response
      */
     protected function unauthorizedResponse(
-        string $message = 'Unauthorized',
+        string $message = 'exceptions.unauthenticated',
         array|JsonResource|Model|Collection $data = null
     ): JsonResponse {
-        return $this->failedResponse($message, 401, null, $data);
+        return $this->failedResponse(__($message), 401, null, $data);
     }
 
     /**
@@ -92,8 +92,12 @@ trait ApiResponses
      */
     protected function validationErrorResponse(
         array $errors,
-        string $message = 'Validation failed'
+        string $message = 'exceptions.validation_failed'
     ): JsonResponse {
-        return $this->failedResponse($message, 422, $errors);
+        return $this->failedResponse(__($message), 422, $errors);
+    }
+
+    protected function serverErrorResponse(): JsonResponse {
+        return $this->failedResponse(__('exceptions.server_error'), 500);
     }
 }
