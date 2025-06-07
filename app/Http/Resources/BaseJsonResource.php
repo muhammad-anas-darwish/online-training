@@ -54,7 +54,7 @@ abstract class BaseJsonResource extends JsonResource
     /**
      * Format a date consistently
      */
-    protected function formatDate($date): ?string
+    public function formatDate($date): ?string
     {
         return $date ? $date->format($this->dateFormat) : null;
     }

@@ -24,19 +24,18 @@ class CustomHandler // extends Handler
         }
 
         if ($exception instanceof \Illuminate\Auth\AuthenticationException) {
-            return $this->unauthorizedResponse(__('exceptions.unauthenticated'));
+            return $this->unauthorizedResponse();
         }
 
         if ($exception instanceof \Illuminate\Validation\ValidationException) {
-            return $this->failedResponse(
-                $exception->getMessage(),
-                422,
-                $exception->errors()
+            return $this->validationErrorResponse(
+                $exception->errors(),
+                $exception->getMessage()
             );
         }
 
         if ($exception instanceof \Illuminate\Database\Eloquent\ModelNotFoundException) {
-            return $this->failedResponse(__('Resource not found'), 404);
+            return $this->notFoundResponse();
         }
 
         return config('app.debug') ? response()->json([
@@ -45,6 +44,6 @@ class CustomHandler // extends Handler
             'file' => $exception->getFile(),
             'line' => $exception->getLine(),
             'trace' => $exception->getTrace()
-        ]) : null;
+        ], 500) : $this->serverErrorResponse();
     }
 }

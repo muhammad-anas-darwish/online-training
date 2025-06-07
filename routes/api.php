@@ -19,3 +19,6 @@ Route::middleware('auth:sanctum')->group(function() {
 Route::prefix('auth')->group(function () {
     Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->middleware('auth:sanctum');
 });
+
+// Include training module routes
+require __DIR__.'/training.php';

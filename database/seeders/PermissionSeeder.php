@@ -10,9 +10,8 @@ use Modules\Auth\Entities\Role;
 class PermissionSeeder extends Seeder
 {
     private $permissionGroups = [
-        'roles' => [
-            'permissions' => ['list', 'show', 'create', 'edit', 'delete', 'get-all-permissions']
-        ],
+        'roles' => ['list', 'show', 'create', 'edit', 'delete', 'get-all-permissions'],
+        'training-categories' => ['list', 'show', 'create', 'edit', 'delete'],
     ];
 
     public function run()
@@ -21,9 +20,7 @@ class PermissionSeeder extends Seeder
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
         // Create permissions
-        foreach ($this->permissionGroups as $group => $config) {
-            $permissions = $config['permissions'] ?? [];
-            
+        foreach ($this->permissionGroups as $group => $permissions) {  
             foreach ($permissions as $permission) {
                 Permission::firstOrCreate([
                     'name' => "{$group}.{$permission}",
@@ -43,7 +40,7 @@ class PermissionSeeder extends Seeder
             'name' => 'super-admin',
             'guard_name' => 'sanctum'
         ]);
-        
+
         // Assign only permissions that belong to this guard
         $superAdmin->givePermissionTo(
             Permission::all()
