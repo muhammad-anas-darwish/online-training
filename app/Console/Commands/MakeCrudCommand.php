@@ -42,7 +42,8 @@ class MakeCrudCommand extends Command
         $this->createRequests($modelName, $moduleName);
         $this->createResource($modelName, $moduleName);
         $this->createService($modelName, $moduleName, $withCache);
-        
+        $this->createFactory($modelName, $moduleName); 
+
         $this->info("CRUD files for {$modelName} created successfully!");
     }
 
@@ -145,6 +146,30 @@ class MakeCrudCommand extends Command
         ];
         
         $this->createFile($path, $stub, $replacements);
+    }
+
+    protected function createFactory($modelName, $moduleName = null)
+    {
+        $stub = $this->getStub('Factory');
+        $path = $this->getFactoryPath($modelName, $moduleName);
+        
+        $replacements = [
+            '{{ namespace }}' => $moduleName ? "Database\\Factories\\Modules\\{$moduleName}\\Entities" : "Database\\Factories",
+            '{{ class }}' => "{$modelName}Factory",
+            '{{ modelNamespace }}' => $moduleName ? "Modules\\{$moduleName}\\Entities\\{$modelName}" : "App\\Models\\{$modelName}",
+            '{{ enumNamespace }}' => $moduleName ? "Modules\\{$moduleName}\\Enums\\{$modelName}TypeEnum" : "App\\Enums\\{$modelName}TypeEnum",
+        ];
+        
+        $this->createFile($path, $stub, $replacements);
+    }
+
+    protected function getFactoryPath($modelName, $moduleName)
+    {
+        if ($moduleName) {
+            return base_path("Modules/{$moduleName}/Database/factories/{$modelName}Factory.php");
+        }
+        
+        return database_path("factories/{$modelName}Factory.php");
     }
 
     protected function getStub($type)

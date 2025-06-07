@@ -3,9 +3,13 @@
 namespace {{ namespace }};
 
 use App\Models\BaseModel;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class {{ class }} extends BaseModel
 {
+    /** @use HasFactory<\Database\Factories\Modules\Training\Entities\CategoryFactory> */
+    use HasFactory;
+
     protected $table = '{{ table }}';
     
     protected $fillable = [
@@ -14,5 +18,13 @@ class {{ class }} extends BaseModel
     
     protected $casts = [
         // Add your casts here
+    ];
+    
+    protected static $filterableColumns = [
+        // Add filterable columns here 
+    ];
+
+    protected static $searchableColumns = [
+        // Add searchable columns here
     ];
 }

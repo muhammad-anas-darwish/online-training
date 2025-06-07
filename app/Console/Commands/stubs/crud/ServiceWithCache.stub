@@ -11,39 +11,40 @@ use {{ dtoNamespace }};
 
 class {{ class }} extends BaseService
 {
-    private const CACHE_PREFIX = '{{ cachePrefix }}';
+    public const CACHE_TAG = '{{ cachePrefix }}';
     private const CACHE_TTL = 86400; // 1 day
 
     public function all(): LengthAwarePaginator
     {
-        $page = request()->get('page', 1);
-        $perPage = request()->get('per_page', 15);
+        $cacheKey = $this->generateCacheKey(request()->query(), 'list');
 
-        if ($this->shouldBypassCache({{ $model }}::class)) {
-            return {{ $model }}::query()->filter()->paginate($perPage);
-        }
-
-        $cacheKey = $this->getPaginatedCacheKey($page, $perPage);
-
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($perPage) {
-            return {{ model }}::query()->paginate($perPage);
+        return Cache::tags(self::CACHE_TAG)->remember($cacheKey, self::CACHE_TTL, function () {
+            return {{ model }}::query()->filter()->paginate($this->getPerPage());
         });
     }
 
-    public function find($id): {{ model }}
+    public function find(int $id): {{ model }}
     {
-        $cacheKey = $this->getItemCacheKey($id);
-        
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($id) {
+        $cacheKey = $this->generateCacheKey(['id' => $id], 'item');
+
+        return Cache::tags(self::CACHE_TAG)->remember($cacheKey, self::CACHE_TTL, function () use ($id) {
             return {{ model }}::findOrFail($id);
         });
+    }
+
+    public function findWithoutRelations(int $id): {{ model }}
+    {
+        $cacheKey = $this->generateCacheKey(['id' => $id], 'item-without-relations');
+
+        return Cache::tags(self::CACHE_TAG)->remember($cacheKey, self::CACHE_TTL, fn() => {{ model }}::findOrFail($id));
     }
 
     public function store({{ model }}DTO $dto): {{ model }}
     {
         return DB::transaction(function () use ($dto): {{ model }} {
             ${{ modelVariable }} = {{ model }}::create([
-                // Add your fields here
+                'name' => $dto->name,
+                'type' => $dto->type,
             ]);
 
             $this->clearCache();
@@ -55,11 +56,11 @@ class {{ class }} extends BaseService
     {
         return DB::transaction(function () use (${{ modelVariable }}, $dto): {{ model }} {
             ${{ modelVariable }}->update([
-                // Add your fields here
+                'name' => $dto->name,
+                'type' => $dto->type,
             ]);
 
-            $this->clearItemCache(${{ modelVariable }}->id);
-            $this->clearPaginatedCache();
+            $this->clearCache();
             return ${{ modelVariable }}->fresh();
         });
     }
@@ -68,34 +69,7 @@ class {{ class }} extends BaseService
     {
         DB::transaction(function () use (${{ modelVariable }}): void {
             ${{ modelVariable }}->delete();
-
-            $this->clearItemCache(${{ modelVariable }}->id);
-            $this->clearPaginatedCache();
+            $this->clearCache();
         });
-    }
-
-    private function getItemCacheKey($id): string
-    {
-        return self::CACHE_PREFIX . ".{$id}";
-    }
-
-    private function getPaginatedCacheKey($page, $perPage): string
-    {
-        return self::CACHE_PREFIX . ".page.{$page}.per_page.{$perPage}";
-    }
-
-    private function clearItemCache($id): void
-    {
-        Cache::forget($this->getItemCacheKey($id));
-    }
-
-    private function clearPaginatedCache(): void
-    {
-        Cache::tags([self::CACHE_PREFIX . '_pages'])->flush();
-    }
-
-    private function clearCache(): void
-    {
-        $this->clearPaginatedCache();
     }
 }
